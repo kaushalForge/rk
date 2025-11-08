@@ -21,7 +21,7 @@ export default function Dashboard({
   const [expanded, setExpanded] = useState(true);
 
   return (
-    <div className="flex min-h-screen bg-[#0d1117] text-white">
+    <div className="flex sticky min-h-screen bg-[#0d1117] text-white">
       {/* Sidebar */}
       <aside
         className={`${

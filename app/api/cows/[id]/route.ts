@@ -7,12 +7,12 @@ import mongoose from "mongoose";
 // GET /api/cows/:id
 export async function GET(
   req: Request,
-  ctx: { params: Promise<{ id: string }> } // params is a Promise
+  ctx: { params: Promise<{ id: string }> }
 ) {
   try {
     await dbConnect();
 
-    const { id } = await ctx.params; // await the params
+    const { id } = await ctx.params;
     if (!id) {
       return NextResponse.json(
         { success: false, message: "ID is required" },
@@ -20,7 +20,10 @@ export async function GET(
       );
     }
 
-    const cow = await Cow.findById(id).populate("calves", "name _id").lean();
+    const cow = await Cow.findById(id).populate(
+      "linkedCalves.calfId",
+      "name image1"
+    );
 
     if (!cow) {
       return NextResponse.json(
@@ -46,7 +49,6 @@ export async function PUT(
 ) {
   try {
     await dbConnect();
-
     const { id } = await ctx.params;
     if (!id) {
       return NextResponse.json(
@@ -62,7 +64,8 @@ export async function PUT(
     body.medicineToConsume = body.medicineToConsume || [];
     body.calves = body.calves || [];
 
-    // ✅ Validate each calf ID if provided
+    // Validate each calf ID
+    const validCalves: { calfId: mongoose.Types.ObjectId }[] = [];
     if (Array.isArray(body.calves) && body.calves.length > 0) {
       for (const calfId of body.calves) {
         if (!mongoose.Types.ObjectId.isValid(calfId)) {
@@ -71,32 +74,28 @@ export async function PUT(
             { status: 400 }
           );
         }
-
-        const calfExists = await Calf.exists({ _id: calfId });
-        if (!calfExists) {
+        const calf = await Calf.findById(calfId);
+        if (!calf) {
           return NextResponse.json(
             { success: false, message: `Calf not found for ID: ${calfId}` },
             { status: 404 }
           );
         }
+        validCalves.push({ calfId: calf._id }); // store as object
       }
     }
 
-    // ✅ Handle pregnancies structure
-    if (body.pregnancies) {
-      body.pregnancies = body.pregnancies.map((p: any) => ({
-        attempt: p.attempt ?? 1,
-        startDate: p.startDate || null,
-        dueDate: p.dueDate || null,
-        delivered: p.delivered ?? false,
-        notes: p.notes || null,
-      }));
-    } else {
-      body.pregnancies = [];
-    }
+    // Handle pregnancies
+    const pregnancies = (body.pregnancies || []).map((p: any) => ({
+      attempt: p.attempt ?? 1,
+      startDate: p.startDate || null,
+      dueDate: p.dueDate || null,
+      delivered: p.delivered ?? false,
+      notes: p.notes || null,
+    }));
 
-    // ✅ Update cow (replacing calves array)
-    const updatedCow = await Cow.findByIdAndUpdate(
+    // Update cow
+    let updatedCow = await Cow.findByIdAndUpdate(
       id,
       {
         $set: {
@@ -105,12 +104,30 @@ export async function PUT(
           weight: body.weight,
           medicines: body.medicines,
           medicineToConsume: body.medicineToConsume,
-          pregnancies: body.pregnancies,
-          calves: body.calves, // <-- Replace with new calves array
+          pregnancies,
+          linkedCalves: validCalves, // store nested objects
+          isPregenant: body.isPregenant,
+          isSick: body.isSick,
+          milkProduction: body.milkProduction,
+          breed: body.breed,
+          image1: body.image1,
+          image2: body.image2,
         },
       },
       { new: true, runValidators: true }
-    ).populate("calves", "name _id");
+    );
+
+    // Populate linked calves safely
+    if (updatedCow) {
+      try {
+        updatedCow = await updatedCow.populate(
+          "linkedCalves.calfId",
+          "name image1"
+        );
+      } catch (popErr) {
+        console.warn("Population failed, but update succeeded:", popErr);
+      }
+    }
 
     if (!updatedCow) {
       return NextResponse.json(
@@ -126,11 +143,7 @@ export async function PUT(
   } catch (error: any) {
     console.error("Error updating cow:", error);
     let message = "Server error";
-
-    if (error.name === "ValidationError") {
-      message = error.message;
-    }
-
+    if (error.name === "ValidationError") message = error.message;
     return NextResponse.json({ success: false, message }, { status: 500 });
   }
 }

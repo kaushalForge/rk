@@ -160,7 +160,7 @@ export default function UpdateCalfPage() {
     date ? new Date(date).toISOString().split("T")[0] : "";
 
   return (
-    <div className="p-6 max-w-6xl mx-auto text-gray-200">
+    <div className="p-6 container mx-auto text-gray-200">
       <h1 className="text-4xl font-bold mb-8 text-white">
         Update Calf - {calf.name}
       </h1>

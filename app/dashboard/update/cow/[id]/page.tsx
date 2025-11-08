@@ -4,13 +4,13 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import {
-  FaPlus,
   FaTrash,
   FaChevronDown,
   FaChevronUp,
   FaBaby,
   FaSkullCrossbones,
 } from "react-icons/fa";
+import { toast } from "sonner";
 
 interface Medicine {
   name: string;
@@ -26,10 +26,10 @@ interface MedicineToConsume {
 }
 
 interface Pregnancy {
-  pregnancyId: string;
   startDate?: string;
   dueDate?: string;
   delivered?: boolean;
+  notes?: string;
 }
 
 interface Cow {
@@ -68,10 +68,10 @@ export default function UpdateCowPage() {
   useEffect(() => {
     const fetchCow = async () => {
       try {
-        const { data } = await axios.get(`/api/cows/${id}`);
-        if (data.success) setCow(data.cow);
+        const response = await axios.get(`/api/cows/${id}`);
+        setCow(response.data.cow);
       } catch (err) {
-        console.error("Failed to load cow:", err);
+        console.error("Error Fetching:", err);
       } finally {
         setLoading(false);
       }
@@ -104,14 +104,42 @@ export default function UpdateCowPage() {
   const addMedicine = () =>
     setCow({
       ...cow,
-      medicines: [...(cow.medicines || []), { name: "", dosage: "", hasTaken: false }],
+      medicines: [
+        ...(cow.medicines || []),
+        { name: "", dosage: "", hasTaken: false },
+      ],
     });
 
   const removeMedicine = (i: number) => {
-    if (!confirm("Are you sure you want to remove this medicine?")) return;
-    const meds = [...(cow.medicines || [])];
-    meds.splice(i, 1);
-    setCow({ ...cow, medicines: meds });
+    toast.warning(
+      <div className="flex flex-col gap-2">
+        <span>Are you sure you want to remove this medicine?</span>
+        <div className="flex gap-2 mt-2">
+          <button
+            onClick={() => {
+              const meds = [...(cow.medicines || [])];
+              meds.splice(i, 1);
+              setCow({ ...cow, medicines: meds });
+              toast.success("Medicine removed");
+              toast.dismiss();
+            }}
+            className="px-3 py-1 bg-red-600 text-white rounded"
+          >
+            Confirm
+          </button>
+          <button
+            onClick={() => toast.dismiss()}
+            className="px-3 py-1 bg-gray-600 text-white rounded"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>,
+      {
+        duration: Infinity,
+        position: "top-center",
+      }
+    );
   };
 
   // --- Medicine To-Consume ---
@@ -128,14 +156,42 @@ export default function UpdateCowPage() {
   const addToConsume = () =>
     setCow({
       ...cow,
-      medicineToConsume: [...(cow.medicineToConsume || []), { name: "", medicineNote: "" }],
+      medicineToConsume: [
+        ...(cow.medicineToConsume || []),
+        { name: "", medicineNote: "" },
+      ],
     });
 
   const removeToConsume = (i: number) => {
-    if (!confirm("Are you sure you want to remove this item?")) return;
-    const list = [...(cow.medicineToConsume || [])];
-    list.splice(i, 1);
-    setCow({ ...cow, medicineToConsume: list });
+    toast.warning(
+      <div className="flex flex-col gap-2">
+        <span>Are you sure you want to remove this item?</span>
+        <div className="flex gap-2 mt-2">
+          <button
+            onClick={() => {
+              const list = [...(cow.medicineToConsume || [])];
+              list.splice(i, 1);
+              setCow({ ...cow, medicineToConsume: list });
+              toast.success("Item removed");
+              toast.dismiss(); // dismiss this toast
+            }}
+            className="px-3 py-1 bg-red-600 text-white rounded"
+          >
+            Confirm
+          </button>
+          <button
+            onClick={() => toast.dismiss()}
+            className="px-3 py-1 bg-gray-600 text-white rounded"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>,
+      {
+        duration: Infinity, // keeps toast visible until user clicks
+        position: "top-center",
+      }
+    );
   };
 
   // --- Pregnancies ---
@@ -152,14 +208,39 @@ export default function UpdateCowPage() {
   const addPregnancy = () =>
     setCow({
       ...cow,
-      pregnancies: [...(cow.pregnancies || []), { pregnancyId: "", delivered: false }],
+      pregnancies: [...(cow.pregnancies || []), { delivered: false }],
     });
 
   const removePregnancy = (i: number) => {
-    if (!confirm("Are you sure you want to remove this pregnancy?")) return;
-    const preg = [...(cow.pregnancies || [])];
-    preg.splice(i, 1);
-    setCow({ ...cow, pregnancies: preg });
+    toast.warning(
+      <div className="flex flex-col gap-2">
+        <span>Are you sure you want to remove this pregnancy?</span>
+        <div className="flex gap-2 mt-2">
+          <button
+            onClick={() => {
+              const preg = [...(cow.pregnancies || [])];
+              preg.splice(i, 1);
+              setCow({ ...cow, pregnancies: preg });
+              toast.success("Pregnancy removed");
+              toast.dismiss(); // dismiss this toast
+            }}
+            className="px-3 py-1 bg-red-600 text-white rounded"
+          >
+            Confirm
+          </button>
+          <button
+            onClick={() => toast.dismiss()}
+            className="px-3 py-1 bg-gray-600 text-white rounded"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>,
+      {
+        duration: Infinity, // keeps toast visible until user clicks
+        position: "top-center",
+      }
+    );
   };
 
   // --- Calves ---
@@ -174,10 +255,35 @@ export default function UpdateCowPage() {
   };
 
   const removeCalf = (i: number) => {
-    if (!confirm("Are you sure you want to remove this calf ID?")) return;
-    const list = [...(cow.calves || [])];
-    list.splice(i, 1);
-    setCow({ ...cow, calves: list });
+    toast.warning(
+      <div className="flex flex-col gap-2">
+        <span>Are you sure you want to remove this calf ID?</span>
+        <div className="flex gap-2 mt-2">
+          <button
+            onClick={() => {
+              const list = [...(cow.calves || [])];
+              list.splice(i, 1);
+              setCow({ ...cow, calves: list });
+              toast.success("Calf removed");
+              toast.dismiss(); // dismiss the toast
+            }}
+            className="px-3 py-1 bg-red-600 text-white rounded"
+          >
+            Confirm
+          </button>
+          <button
+            onClick={() => toast.dismiss()}
+            className="px-3 py-1 bg-gray-600 text-white rounded"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>,
+      {
+        duration: Infinity,
+        position: "top-center",
+      }
+    );
   };
 
   const isValidObjectId = (id: string) => /^[0-9a-fA-F]{24}$/.test(id);
@@ -185,25 +291,27 @@ export default function UpdateCowPage() {
   const handleSubmit = async () => {
     if (!cow) return;
 
-    const validCalves = (cow.calves || [])
+    // Convert string IDs or object IDs to valid ObjectId objects
+    const validLinkedCalves = (cow.calves || [])
       .map((c) => (typeof c === "string" ? c.trim() : c?._id?.trim()))
-      .filter((id) => id && isValidObjectId(id));
+      .filter((id) => id && isValidObjectId(id))
+      .map((id) => ({ calfId: id })); // ✅ Important: wrap in object
 
     const invalidIds = (cow.calves || [])
       .map((c) => (typeof c === "string" ? c.trim() : c?._id?.trim()))
       .filter((id) => id && !isValidObjectId(id));
 
     if (invalidIds.length > 0) {
-      alert(`Invalid calf ID(s): ${invalidIds.join(", ")}`);
+      toast.error(`Invalid calf ID(s): ${invalidIds.join(", ")}`);
       return;
     }
 
-    const payload: Cow = {
+    const payload: any = {
       ...cow,
       medicines: cow.medicines || [],
       medicineToConsume: cow.medicineToConsume || [],
       pregnancies: cow.pregnancies || [],
-      calves: validCalves,
+      linkedCalves: validLinkedCalves, // ✅ updated field
       isPregenant: cow.isPregenant ?? false,
       isSick: cow.isSick ?? false,
     };
@@ -211,22 +319,23 @@ export default function UpdateCowPage() {
     try {
       const { data } = await axios.put(`/api/cows/${cow._id}`, payload);
       if (data.success) {
-        alert("Cow updated successfully!");
+        toast.success("Cow updated successfully!", {
+          position: "top-center",
+        });
         router.refresh();
       } else {
-        alert(`Failed to update cow: ${data.message}`);
+        toast.error(`Failed to update cow: ${data.message}`);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Failed to update cow");
+      toast.error("Failed to update cow");
     }
   };
-
   const formatDate = (date?: string) =>
-    date ? new Date(date).toISOString().split("T")[0] : "";
+    date ? new Date(date).toISOString().slice(0, 10) : "";
 
   return (
-    <div className="p-6 max-w-6xl mx-auto text-gray-200">
+    <div className="p-6 container mx-auto text-gray-200">
       <h1 className="text-4xl font-bold mb-8 text-white">
         Update Cow - {cow.name}
       </h1>
@@ -321,7 +430,9 @@ export default function UpdateCowPage() {
               onChange={(e) =>
                 handleChange(
                   input.field as keyof Cow,
-                  input.type === "number" ? Number(e.target.value) : e.target.value
+                  input.type === "number"
+                    ? Number(e.target.value)
+                    : e.target.value
                 )
               }
               className="w-full p-3 rounded-lg bg-[#161b22] border border-gray-700 text-white focus:ring-2 focus:ring-blue-500"
@@ -423,7 +534,11 @@ export default function UpdateCowPage() {
                           type="checkbox"
                           checked={item.hasTaken ?? false}
                           onChange={(e) =>
-                            handleMedicineChange(i, "hasTaken", e.target.checked)
+                            handleMedicineChange(
+                              i,
+                              "hasTaken",
+                              e.target.checked
+                            )
                           }
                         />
                         Taken
@@ -447,24 +562,30 @@ export default function UpdateCowPage() {
                         placeholder="Note"
                         value={item.medicineNote ?? ""}
                         onChange={(e) =>
-                          handleToConsumeChange(i, "medicineNote", e.target.value)
+                          handleToConsumeChange(
+                            i,
+                            "medicineNote",
+                            e.target.value
+                          )
                         }
                         className="p-2 rounded bg-[#0f131a] border border-gray-600 text-white flex-1"
                       />
                     </div>
                   )}
-
                   {section.key === "pregnancies" && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <input
-                        type="text"
-                        placeholder="Pregnancy ID"
-                        value={item.pregnancyId}
+                      {/* Notes */}
+                      <textarea
+                        placeholder="Notes"
+                        value={item.notes ?? ""}
                         onChange={(e) =>
-                          handlePregnancyChange(i, "pregnancyId", e.target.value)
+                          handlePregnancyChange(i, "notes", e.target.value)
                         }
-                        className="p-2 rounded bg-[#0f131a] border border-gray-600 text-white"
+                        className="p-2 rounded bg-[#0f131a] border border-gray-600 text-white col-span-1 md:col-span-2"
+                        rows={2}
                       />
+
+                      {/* Start Date */}
                       <input
                         type="date"
                         value={formatDate(item.startDate)}
@@ -473,6 +594,8 @@ export default function UpdateCowPage() {
                         }
                         className="p-2 rounded bg-[#0f131a] border border-gray-600 text-white"
                       />
+
+                      {/* Due Date */}
                       <input
                         type="date"
                         value={formatDate(item.dueDate)}
@@ -481,12 +604,18 @@ export default function UpdateCowPage() {
                         }
                         className="p-2 rounded bg-[#0f131a] border border-gray-600 text-white"
                       />
+
+                      {/* Delivered */}
                       <label className="flex items-center gap-2 mt-2">
                         <input
                           type="checkbox"
                           checked={item.delivered ?? false}
                           onChange={(e) =>
-                            handlePregnancyChange(i, "delivered", e.target.checked)
+                            handlePregnancyChange(
+                              i,
+                              "delivered",
+                              e.target.checked
+                            )
                           }
                         />
                         Delivered

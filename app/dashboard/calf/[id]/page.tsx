@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import { FaSyringe, FaBaby } from "react-icons/fa";
+import { useParams, useRouter } from "next/navigation";
+import { FaSyringe, FaBaby, FaEdit } from "react-icons/fa";
 import { GiCow } from "react-icons/gi";
-import Link from "next/link";
 import axios from "axios";
 
 interface Medicine {
@@ -13,6 +12,11 @@ interface Medicine {
   dosage?: string;
   hasTaken?: boolean;
   note?: string;
+}
+
+interface MedicineToConsume {
+  name: string;
+  medicineNote: string;
 }
 
 interface Calf {
@@ -28,12 +32,17 @@ interface Calf {
   medicines?: Medicine[];
   image1?: string;
   image2?: string;
+  medicineToConsume?: MedicineToConsume[];
 }
 
 export default function CalfDetailPage() {
   const { id } = useParams();
+  const router = useRouter();
   const [calf, setCalf] = useState<Calf | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currentImage, setCurrentImage] = useState<"image1" | "image2">(
+    "image1"
+  );
 
   useEffect(() => {
     const fetchCalf = async () => {
@@ -68,12 +77,45 @@ export default function CalfDetailPage() {
   return (
     <div className="p-6 container mx-auto text-gray-200 space-y-10">
       {/* Header */}
-      <div className="flex flex-col md:flex-row items-center gap-6 bg-[#161b22]/70 p-4 md:p-6 rounded-2xl border border-gray-700 shadow-lg">
-        <img
-          src={calf.image1 || "https://via.placeholder.com/400x300?text=Calf"}
-          alt={calf.name}
-          className="w-64 h-48 object-cover rounded-xl border border-gray-700"
-        />
+      <div className="relative flex flex-col md:flex-row items-center gap-6 bg-[#161b22]/70 p-4 md:p-6 rounded-2xl border border-gray-700 shadow-lg">
+        {/* Update Button */}
+        <button
+          onClick={() => router.push(`/dashboard/update/calf/${calf._id}`)}
+          className="absolute top-4 right-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm"
+        >
+          <FaEdit /> Update
+        </button>
+
+        {/* Image Toggle */}
+        <div className="relative">
+          <img
+            src={
+              currentImage === "image1"
+                ? calf.image1 || "https://via.placeholder.com/400x300?text=Cow"
+                : calf.image2 ||
+                  calf.image1 ||
+                  "https://via.placeholder.com/400x300?text=Cow"
+            }
+            alt={calf.name}
+            className="w-64 h-48 object-cover rounded-xl border border-gray-700"
+          />
+
+          {calf.image2 && (
+            <button
+              onClick={() =>
+                setCurrentImage(currentImage === "image1" ? "image2" : "image1")
+              }
+              className="absolute bottom-2 right-2 w-12 h-6 bg-orange-600/70 rounded-full p-0.5 flex items-center transition-colors duration-300"
+            >
+              <span
+                className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ${
+                  currentImage === "image2" ? "translate-x-6 bg-orange-600" : ""
+                }`}
+              ></span>
+            </button>
+          )}
+        </div>
+
         <div className="flex-1 space-y-1">
           <h1 className="text-3xl font-bold text-white flex items-center gap-2">
             <GiCow className="text-green-400" /> {calf.name}
@@ -151,11 +193,17 @@ export default function CalfDetailPage() {
                     </td>
                     <td className="py-3 px-4">
                       {med.dateGiven ? (
-                        new Date(med.dateGiven).toLocaleDateString()
+                        (() => {
+                          const date = new Date(med.dateGiven);
+                          return isNaN(date.getTime())
+                            ? "Invalid Date"
+                            : date.toISOString().split("T")[0];
+                        })()
                       ) : (
                         <span className="text-gray-500">N/A</span>
                       )}
                     </td>
+
                     <td className="py-3 px-4">
                       {med.dosage || <span className="text-gray-500">N/A</span>}
                     </td>
@@ -186,6 +234,25 @@ export default function CalfDetailPage() {
         ) : (
           <p className="text-gray-400 mt-3">No medicine records found.</p>
         )}
+
+        {/* Medicine To-Consume */}
+        <div className="mt-10">
+          <h2 className="text-2xl font-bold text-white flex items-center gap-2 mb-4">
+            <FaSyringe className="text-cyan-400" /> Medicine To-Consume
+          </h2>
+          {calf.medicineToConsume?.length ? (
+            <ul className="list-disc list-inside space-y-1">
+              {calf.medicineToConsume.map((med, i) => (
+                <li key={i}>
+                  <span className="font-semibold">{med.name}</span> -{" "}
+                  {med.medicineNote || "N/A"}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-gray-400 mt-2">No medicines to consume.</p>
+          )}
+        </div>
       </div>
     </div>
   );

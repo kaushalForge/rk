@@ -36,9 +36,12 @@ const cowSchema = new mongoose.Schema(
         notes: { type: String, default: null },
       },
     ],
-    calves: [
-      { type: mongoose.Schema.Types.ObjectId, ref: "Calf", default: [] },
+    linkedCalves: [
+      {
+        calfId: { type: mongoose.Schema.Types.ObjectId, ref: "Calf" },
+      },
     ],
+
     isPregenant: { type: Boolean, default: false },
     isSick: { type: Boolean, default: false },
   },
