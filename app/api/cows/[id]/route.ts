@@ -29,7 +29,7 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ success: true, data: cow }, { status: 200 });
+    return NextResponse.json({ success: true, cow }, { status: 200 });
   } catch (error) {
     console.error("Error fetching cow:", error);
     return NextResponse.json(
