@@ -6,7 +6,7 @@ export async function GET() {
   try {
     await dbConnect();
     const cows = await Cow.find();
-    return NextResponse.json({ success: true, data: cows }, { status: 200 });
+    return NextResponse.json({ success: true, cows }, { status: 200 });
   } catch (error) {
     console.error("Error fetching cows:", error);
     return NextResponse.json(

@@ -9,7 +9,7 @@ export async function GET() {
 
     // Fetch all calves
     const calves = await Calf.find();
-    return NextResponse.json({ success: true, data: calves }, { status: 200 });
+    return NextResponse.json({ success: true, calves }, { status: 200 });
   } catch (error) {
     console.error("Error fetching calves:", error);
     return NextResponse.json(
