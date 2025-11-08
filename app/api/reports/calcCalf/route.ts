@@ -15,8 +15,8 @@ export async function GET(req: Request) {
     }));
 
     const dailyHealthData = [
-      { status: "Healthy", count: calves.filter(c => !c.isSick).length },
-      { status: "Sick", count: calves.filter(c => c.isSick).length },
+      { status: "Healthy", count: calves.filter((c) => !c.isSick).length },
+      { status: "Sick", count: calves.filter((c) => c.isSick).length },
     ];
 
     // Weekly & Monthly: For simplicity, replicate daily for now
@@ -32,6 +32,9 @@ export async function GET(req: Request) {
       monthly: { calfData: monthlyCalfData, healthData: monthlyHealthData },
     });
   } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch calf reports" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch calf reports" },
+      { status: 500 }
+    );
   }
 }

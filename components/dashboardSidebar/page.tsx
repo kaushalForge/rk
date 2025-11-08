@@ -95,15 +95,6 @@ export default function Dashboard({
           )}
         </div>
       </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 p-6 bg-[#0d1117]/80 backdrop-blur-2xl overflow-y-auto">
-        {children || (
-          <div className="text-center text-gray-400 mt-20">
-            Select an option from the sidebar to begin.
-          </div>
-        )}
-      </main>
     </div>
   );
 }
