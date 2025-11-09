@@ -158,13 +158,13 @@ export default function CowDetailPage() {
         <div className="bg-[#161b22] p-3 rounded-xl border border-gray-700 text-center">
           <p className="text-gray-400 text-sm">Milk Production</p>
           <p className="text-xl text-green-400 font-bold">
-            {cow.milkProduction || "N/A"} L/day
+            {cow.milkProduction || "N/A"}
           </p>
         </div>
         <div className="bg-[#161b22] p-3 rounded-xl border border-gray-700 text-center">
           <p className="text-gray-400 text-sm">Milk Fat %</p>
           <p className="text-xl text-yellow-400 font-bold">
-            {cow.milkFat || "N/A"}%
+            {cow.milkFat || "N/A"}
           </p>
         </div>
         <div className="bg-[#161b22] p-3 rounded-xl border border-gray-700 text-center">

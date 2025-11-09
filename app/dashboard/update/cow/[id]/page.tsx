@@ -42,7 +42,7 @@ interface Cow {
   weight?: number;
   milkProduction?: number;
   milkFat?: number;
-  isPregenant?: boolean;
+  isPregnant?: boolean;
   isSick?: boolean;
   medicines?: Medicine[];
   medicineToConsume?: MedicineToConsume[];
@@ -311,8 +311,8 @@ export default function UpdateCowPage() {
       medicines: cow.medicines || [],
       medicineToConsume: cow.medicineToConsume || [],
       pregnancies: cow.pregnancies || [],
-      linkedCalves: validLinkedCalves, // ✅ updated field
-      isPregenant: cow.isPregenant ?? false,
+      linkedCalves: validLinkedCalves,
+      isPregnant: cow.isPregnant ?? false,
       isSick: cow.isSick ?? false,
     };
 
@@ -374,8 +374,8 @@ export default function UpdateCowPage() {
             <label className="relative inline-flex items-center cursor-pointer ml-auto">
               <input
                 type="checkbox"
-                checked={cow.isPregenant ?? false}
-                onChange={(e) => handleChange("isPregenant", e.target.checked)}
+                checked={cow.isPregnant ?? false}
+                onChange={(e) => handleChange("isPregnant", e.target.checked)}
                 className="sr-only peer"
               />
               <div className="w-14 h-7 bg-white/20 rounded-full peer-checked:bg-pink-400 transition-all duration-300 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:w-6 after:h-6 after:bg-white after:rounded-full after:shadow-lg after:transition-all peer-checked:after:translate-x-7"></div>

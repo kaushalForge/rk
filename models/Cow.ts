@@ -4,11 +4,11 @@ const cowSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     image1: { type: String, required: true },
-    image2: { type: String, default: "" },
-    breed: { type: String, default: "" },
-    age: { type: Number, default: null },
-    weight: { type: Number, default: null },
-    milkProduction: { type: Number, default: null },
+    image2: { type: String, default: "N/A" },
+    breed: { type: String, default: "N/A" },
+    age: { type: Number, default: "N/A" },
+    weight: { type: Number, default: "N/A" },
+    milkProduction: { type: Number, default: "N/A" },
     medicines: [
       {
         name: { type: String, required: true },
@@ -42,7 +42,7 @@ const cowSchema = new mongoose.Schema(
       },
     ],
 
-    isPregenant: { type: Boolean, default: false },
+    isPregnant: { type: Boolean, default: false },
     isSick: { type: Boolean, default: false },
   },
   { timestamps: true }

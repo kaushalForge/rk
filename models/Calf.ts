@@ -4,12 +4,10 @@ const calfSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     image1: { type: String, required: true },
-    image2: { type: String, default: "" },
-    breed: { type: String, default: "", required: false },
-    age: { type: Number, default: null },
-    weight: { type: Number, default: null },
-
-    // ✅ Keep medicineToConsume separate from medicines
+    image2: { type: String, default: "N/A" },
+    breed: { type: String, default: "N/A", required: false },
+    age: { type: Number, default: "N/A" },
+    weight: { type: Number, default: "N/A" },
     medicineToConsume: {
       type: [
         {
@@ -19,8 +17,6 @@ const calfSchema = new mongoose.Schema(
       ],
       default: [],
     },
-
-    // ✅ Medicines list (given medicines)
     medicines: {
       type: [
         {
@@ -33,8 +29,7 @@ const calfSchema = new mongoose.Schema(
       ],
       default: [],
     },
-
-    isPregenant: { type: Boolean, default: false },
+    isPregnant: { type: Boolean, default: false },
     isSick: { type: Boolean, default: false },
   },
   { timestamps: true }

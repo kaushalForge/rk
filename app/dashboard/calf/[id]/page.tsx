@@ -124,7 +124,10 @@ export default function CalfDetailPage() {
             Breed: <span className="text-white">{calf.breed || "N/A"}</span>
           </p>
           <p className="text-gray-400">
-            Weight: <span className="text-white">{calf.weight ?? "?"} kg</span>
+            Weight:{" "}
+            <span className="text-white">
+              {calf.weight && calf.weight !== 0 ? `${calf.weight} kg` : "N/A"}
+            </span>
           </p>
           <p className="text-gray-400">
             Age: <span className="text-white">{calf.age ?? "?"} years</span>
@@ -154,7 +157,7 @@ export default function CalfDetailPage() {
         <div className="bg-[#161b22] p-3 rounded-xl border border-gray-700 text-center">
           <p className="text-gray-400 text-sm">Weight</p>
           <p className="text-xl text-green-400 font-bold">
-            {calf.weight ?? "N/A"} kg
+            {calf.weight && calf.weight !== 0 ? `${calf.weight} kg` : "N/A"}
           </p>
         </div>
         <div className="bg-[#161b22] p-3 rounded-xl border border-gray-700 text-center">
