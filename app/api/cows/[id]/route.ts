@@ -106,7 +106,7 @@ export async function PUT(
           medicineToConsume: body.medicineToConsume,
           pregnancies,
           linkedCalves: validCalves, // store nested objects
-          isPregenant: body.isPregenant,
+          isPregnant: body.isPregnant,
           isSick: body.isSick,
           milkProduction: body.milkProduction,
           breed: body.breed,

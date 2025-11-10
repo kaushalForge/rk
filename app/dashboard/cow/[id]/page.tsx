@@ -35,7 +35,7 @@ interface Cow {
   breed?: string;
   age?: number;
   weight?: number;
-  isPregenant?: boolean;
+  isPregnant?: boolean;
   isSick?: boolean;
   milkProduction?: number;
   milkFat?: number;
@@ -139,7 +139,7 @@ export default function CowDetailPage() {
             Age: <span className="text-white">{cow.age || "?"} years</span>
           </p>
           <div className="flex flex-wrap gap-2 mt-2">
-            {cow.isPregenant && (
+            {cow.isPregnant && (
               <span className="bg-green-600/30 text-green-400 px-3 py-1 rounded-md text-sm">
                 Pregnant 🍼
               </span>
