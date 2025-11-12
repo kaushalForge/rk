@@ -5,9 +5,9 @@ import { useState } from "react";
 export default function AddCowPage() {
   const [formData, setFormData] = useState({
     name: "",
-    breed: "",
     age: "",
     weight: "",
+    breed: "",
     milkProduction: "",
     primaryImage: "",
     secondaryImage: "",

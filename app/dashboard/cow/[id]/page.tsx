@@ -69,6 +69,7 @@ export default function CowDetailPage() {
       try {
         const response = await axios.get(`/api/cows/${id}`);
         setCow(response.data.cow);
+        setLoading(false);
       } catch (err) {
         console.error("Failed to load cow:", err);
       } finally {
@@ -76,9 +77,17 @@ export default function CowDetailPage() {
       }
     };
 
-    console.log(cow?.linkedCalves, "test");
     fetchCow();
   }, [id]);
+
+  if (loading)
+    return (
+      <div className="flex min-h-screen w-full items-center justify-center mt-6">
+        <p className="text-orange-600 font-semibold text-xl">
+          Loading Cow data...
+        </p>
+      </div>
+    );
 
   if (!cow)
     return <p className="text-center text-red-400 mt-6">Cow not found.</p>;

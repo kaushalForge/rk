@@ -4,15 +4,15 @@ import Cow from "@/models/Cow";
 import Calf from "@/models/Calf";
 import mongoose from "mongoose";
 
-// GET /api/cows/:id
+// 🐮 GET /api/cows/:id
 export async function GET(
   req: Request,
   ctx: { params: Promise<{ id: string }> }
 ) {
   try {
     await dbConnect();
-
     const { id } = await ctx.params;
+
     if (!id) {
       return NextResponse.json(
         { success: false, message: "ID is required" },
@@ -34,7 +34,7 @@ export async function GET(
 
     return NextResponse.json({ success: true, cow }, { status: 200 });
   } catch (error) {
-    console.error("Error fetching cow:", error);
+    console.error("❌ Error fetching cow:", error);
     return NextResponse.json(
       { success: false, message: "Server error" },
       { status: 500 }
@@ -42,7 +42,7 @@ export async function GET(
   }
 }
 
-// PUT /api/cows/:id
+// 🧬 PUT /api/cows/:id
 export async function PUT(
   req: Request,
   ctx: { params: Promise<{ id: string }> }
@@ -50,6 +50,7 @@ export async function PUT(
   try {
     await dbConnect();
     const { id } = await ctx.params;
+
     if (!id) {
       return NextResponse.json(
         { success: false, message: "Cow ID is required" },
@@ -59,18 +60,18 @@ export async function PUT(
 
     const body = await req.json();
 
-    // Ensure all arrays exist
+    // Ensure arrays exist
     body.medicines = body.medicines || [];
     body.medicineToConsume = body.medicineToConsume || [];
     body.calves = body.calves || [];
 
-    // Validate each calf ID
+    // ✅ Validate and format linked calves
     const validCalves: { calfId: mongoose.Types.ObjectId }[] = [];
     if (Array.isArray(body.calves) && body.calves.length > 0) {
       for (const calfId of body.calves) {
         if (!mongoose.Types.ObjectId.isValid(calfId)) {
           return NextResponse.json(
-            { success: false, message: `Invalid calf ID format: ${calfId}` },
+            { success: false, message: `Invalid calf ID: ${calfId}` },
             { status: 400 }
           );
         }
@@ -81,11 +82,11 @@ export async function PUT(
             { status: 404 }
           );
         }
-        validCalves.push({ calfId: calf._id }); // store as object
+        validCalves.push({ calfId: calf._id });
       }
     }
 
-    // Handle pregnancies
+    // ✅ Handle pregnancies
     const pregnancies = (body.pregnancies || []).map((p: any) => ({
       attempt: p.attempt ?? 1,
       startDate: p.startDate || null,
@@ -94,30 +95,40 @@ export async function PUT(
       notes: p.notes || null,
     }));
 
-    // Update cow
+    // ✅ Update cow (matches schema fields)
     let updatedCow = await Cow.findByIdAndUpdate(
       id,
       {
         $set: {
           name: body.name,
+          image1: body.image1,
+          image2: body.image2,
           age: body.age,
           weight: body.weight,
+          breed: body.breed,
+          milkProduction: body.milkProduction,
+          breedingDate: body.breedingDate,
+          embryonicDeathDate: body.embryonicDeathDate,
+          expectedCalvingDate: body.expectedCalvingDate,
+          earlyDewormingDate: body.earlyDewormingDate,
+          preCalvingMetabolicSupplimentDate:
+            body.preCalvingMetabolicSupplimentDate,
+          lateDewormingDate: body.lateDewormingDate,
+          calvingDate: body.calvingDate,
+          calvingCount: body.calvingCount,
           medicines: body.medicines,
           medicineToConsume: body.medicineToConsume,
           pregnancies,
-          linkedCalves: validCalves, // store nested objects
+          linkedCalves: validCalves,
           isPregnant: body.isPregnant,
           isSick: body.isSick,
-          milkProduction: body.milkProduction,
-          breed: body.breed,
-          image1: body.image1,
-          image2: body.image2,
+          isFertilityConfirmed: body.isFertilityConfirmed,
         },
       },
       { new: true, runValidators: true }
     );
 
-    // Populate linked calves safely
+    // ✅ Populate linked calves again (safe)
     if (updatedCow) {
       try {
         updatedCow = await updatedCow.populate(
@@ -125,7 +136,7 @@ export async function PUT(
           "name image1"
         );
       } catch (popErr) {
-        console.warn("Population failed, but update succeeded:", popErr);
+        console.warn("⚠️ Population failed:", popErr);
       }
     }
 
@@ -137,13 +148,17 @@ export async function PUT(
     }
 
     return NextResponse.json(
-      { success: true, message: "Cow updated successfully", data: updatedCow },
+      {
+        success: true,
+        message: "Cow updated successfully",
+        data: updatedCow,
+      },
       { status: 200 }
     );
   } catch (error: any) {
-    console.error("Error updating cow:", error);
-    let message = "Server error";
-    if (error.name === "ValidationError") message = error.message;
+    console.error("❌ Error updating cow:", error);
+    const message =
+      error.name === "ValidationError" ? error.message : "Server error";
     return NextResponse.json({ success: false, message }, { status: 500 });
   }
 }

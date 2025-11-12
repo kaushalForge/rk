@@ -114,10 +114,16 @@ function SidebarLink({
   return (
     <Link
       href={href}
-      className="flex items-center gap-3 px-4 py-3 hover:bg-green-500/10 transition rounded-md mx-2"
+      className="flex whitespace-nowrap items-center gap-3 px-4 py-3 hover:bg-green-500/10 transition rounded-md mx-2"
     >
       {icon}
-      {expanded && <span className="text-sm">{label}</span>}
+      <span
+        className={`text-sm transition-all duration-300 overflow-hidden ${
+          expanded ? "opacity-100 ml-2 w-auto" : "opacity-0 ml-0 w-0"
+        }`}
+      >
+        {label}
+      </span>
     </Link>
   );
 }

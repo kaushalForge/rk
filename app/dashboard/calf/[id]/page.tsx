@@ -68,7 +68,11 @@ export default function CalfDetailPage() {
 
   if (loading)
     return (
-      <p className="text-center text-gray-400 mt-6">Loading calf data...</p>
+      <div className="flex min-h-screen w-full items-center justify-center mt-6">
+        <p className="text-orange-600 font-semibold text-xl">
+          Loading calf data...
+        </p>
+      </div>
     );
 
   if (!calf)
