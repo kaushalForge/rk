@@ -2,16 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { MdSpaceDashboard } from "react-icons/md";
+import { MdSpaceDashboard, MdMenu, MdMenuOpen } from "react-icons/md";
 import { FiFilter } from "react-icons/fi";
-
 import {
   FaPlusCircle,
   FaBaby,
   FaChartBar,
   FaRegUserCircle,
 } from "react-icons/fa";
-import { MdMenu, MdMenuOpen } from "react-icons/md";
 
 export default function Dashboard({
   children,
@@ -21,109 +19,78 @@ export default function Dashboard({
   const [expanded, setExpanded] = useState(true);
 
   return (
-    <div className="flex sticky min-h-screen bg-[#0d1117] text-white">
+    <div className="flex min-h-screen bg-[#0d1117] text-white">
       {/* Sidebar */}
       <aside
-        className={`${
-          expanded ? "w-64" : "w-20"
-        } transition-all duration-300 bg-[#161b22]/80 backdrop-blur-2xl border-r border-gray-800 flex flex-col justify-between`}
+        className={`
+          flex flex-col justify-between bg-[#161b22]/80 backdrop-blur-2xl border-r border-gray-800
+          transition-all duration-300
+          w-10 md:w-16
+        `}
       >
         <div>
           {/* Sidebar Header */}
-          <div className="flex items-center gap-2 px-4 py-4 border-b border-gray-800">
-            <MdSpaceDashboard className="text-green-400 text-2xl" />
-            {expanded && (
-              <h1 className="text-lg font-semibold bg-gradient-to-r from-green-300 to-green-600 bg-clip-text text-transparent">
-                Dashboard
-              </h1>
-            )}
-            <button
-              onClick={() => setExpanded(!expanded)}
-              className="ml-auto text-gray-400 hover:text-green-400"
-            >
-              {expanded ? <MdMenuOpen /> : <MdMenu />}
-            </button>
+          <div className="flex items-center border-b-2 border-green-800/40 justify-center py-4 border-b border-gray-800">
+            <MdSpaceDashboard className="text-green-400 text-lg md:text-xl" />
           </div>
 
           {/* Sidebar Navigation */}
-          <nav className="mt-6 flex flex-col gap-1">
-            <SidebarLink
+          <nav className="mt-4 flex flex-col gap-3 items-center">
+            <SidebarIconLink
               href="/dashboard"
-              icon={<MdSpaceDashboard className="text-green-400 text-lg" />}
-              label="Overview"
-              expanded={expanded}
+              icon={
+                <MdSpaceDashboard className="text-green-400 text-lg md:text-xl" />
+              }
             />
-
-            <SidebarLink
+            <SidebarIconLink
               href="/dashboard/add-cow"
-              icon={<FaPlusCircle className="text-green-400 text-lg" />}
-              label="Add Cow"
-              expanded={expanded}
+              icon={
+                <FaPlusCircle className="text-green-400 text-lg md:text-xl" />
+              }
             />
-
-            <SidebarLink
+            <SidebarIconLink
               href="/dashboard/add-calf"
-              icon={<FaBaby className="text-green-400 text-lg" />}
-              label="Add Calf"
-              expanded={expanded}
+              icon={<FaBaby className="text-green-400 text-lg md:text-xl" />}
             />
-
-            <SidebarLink
+            <SidebarIconLink
               href="/dashboard/filter"
-              icon={<FiFilter className="text-green-400 text-lg" />}
-              label="Filter"
-              expanded={expanded}
+              icon={<FiFilter className="text-green-400 text-lg md:text-xl" />}
             />
-
-            <SidebarLink
+            <SidebarIconLink
               href="/dashboard/reports"
-              icon={<FaChartBar className="text-green-400 text-lg" />}
-              label="Reports"
-              expanded={expanded}
+              icon={
+                <FaChartBar className="text-green-400 text-lg md:text-xl" />
+              }
             />
           </nav>
         </div>
 
         {/* Sidebar Footer */}
-        <div className="border-t border-gray-800 p-4 flex items-center gap-3">
-          <FaRegUserCircle className="text-3xl text-gray-400" />
-          {expanded && (
-            <div>
-              <p className="text-sm font-semibold">Farm Manager</p>
-              <p className="text-xs text-gray-500">Admin</p>
-            </div>
-          )}
+        <div className="flex justify-center py-4 border-t border-gray-800">
+          <FaRegUserCircle className="text-gray-400 text-2xl" />
         </div>
       </aside>
+
+      {/* Dashboard content */}
+      <div className="flex-1">{children}</div>
     </div>
   );
 }
 
-/* 🔹 Reusable Sidebar Link Component */
-function SidebarLink({
+/* Sidebar Icon Link Component */
+function SidebarIconLink({
   href,
   icon,
-  label,
-  expanded,
 }: {
   href: string;
   icon: React.ReactNode;
-  label: string;
-  expanded: boolean;
 }) {
   return (
     <Link
       href={href}
-      className="flex whitespace-nowrap items-center gap-3 px-4 py-3 hover:bg-green-500/10 transition rounded-md mx-2"
+      className="flex items-center justify-center w-full h-12 hover:bg-green-500/20 transition rounded-md"
     >
       {icon}
-      <span
-        className={`text-sm transition-all duration-300 overflow-hidden ${
-          expanded ? "opacity-100 ml-2 w-auto" : "opacity-0 ml-0 w-0"
-        }`}
-      >
-        {label}
-      </span>
     </Link>
   );
 }

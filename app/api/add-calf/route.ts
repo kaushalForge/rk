@@ -33,18 +33,19 @@ export async function POST(req: Request) {
       image1,
       image2,
       medicines,
-      medicineToConsume, // ✅ added
-      isPregenant,
+      medicineToConsume,
+      isPregnant,
       isSick,
     } = body;
 
-    // Mandatory checks
+    // Validation — required fields
     if (!name) {
       return NextResponse.json(
         { success: false, message: "Name is required." },
         { status: 400 }
       );
     }
+
     if (!image1) {
       return NextResponse.json(
         { success: false, message: "Primary image (image1) is required." },
@@ -52,26 +53,41 @@ export async function POST(req: Request) {
       );
     }
 
-    // ✅ Create new calf properly
+    // 🚫 Prevent duplicate calf name
+    const existingCalf = await Calf.findOne({ name });
+    if (existingCalf) {
+      return NextResponse.json(
+        { success: false, message: "A calf with this name already exists." },
+        { status: 400 }
+      );
+    }
+
+    // ✅ Create calf safely
     const newCalf = await Calf.create({
       name,
       breed: breed || "",
-      age: age || null,
-      weight: weight || null,
+      age: age ?? null,
+      weight: weight ?? null,
       image1,
       image2: image2 || "",
-      medicines: medicines || [],
-      medicineToConsume: medicineToConsume || [], // ✅ now included separately
-      isPregenant: isPregenant || false,
-      isSick: isSick || false,
+      medicines: Array.isArray(medicines) ? medicines : [],
+      medicineToConsume: Array.isArray(medicineToConsume)
+        ? medicineToConsume
+        : [],
+      isPregnant: isPregnant ?? false,
+      isSick: isSick ?? false,
     });
 
     return NextResponse.json(
-      { success: true, message: "🐮 Calf added successfully!", data: newCalf },
+      {
+        success: true,
+        message: "🐮 Calf added successfully!",
+        data: newCalf,
+      },
       { status: 201 }
     );
   } catch (error) {
-    console.error("Error adding calf:", error);
+    console.error("❌ Error adding calf:", error);
     return NextResponse.json(
       { success: false, message: "Failed to add calf." },
       { status: 500 }

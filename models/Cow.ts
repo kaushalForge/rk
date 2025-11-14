@@ -6,12 +6,15 @@ const cowSchema = new mongoose.Schema(
     name: { type: String, required: true },
     image1: { type: String, required: true },
     image2: { type: String, default: "N/A" },
-    age: { type: Number, default: null },
-    weight: { type: Number, default: null },
-    breed: { type: String, default: "N/A" },
     milkProduction: { type: Number, default: null },
+    isPregnant: { type: Boolean, default: false },
+    isFertilityConfirmed: { type: Boolean, default: false },
+    linkedCalves: [
+      {
+        calfId: { type: mongoose.Schema.Types.ObjectId, ref: "Calf" },
+      },
+    ],
 
-    // ✅ All date fields now use null as default
     breedingDate: { type: Date, default: null },
     embryonicDeathDate: { type: Date, default: null }, // chances of infertility i.e after 21 days
     expectedCalvingDate: { type: Date, default: null }, // 283 days after breeding
@@ -19,9 +22,7 @@ const cowSchema = new mongoose.Schema(
     preCalvingMetabolicSupplimentDate: { type: Date, default: null }, // 30 days before calving
     lateDewormingDate: { type: Date, default: null }, // 15 days after calving 2nd dose - (Juka)
     calvingDate: { type: Date, default: null }, // actual calving date
-
-    calvingCount: { type: Number, default: 0 },
-
+    calvingCount: { type: Number, default: null },
     medicines: [
       {
         name: { type: String, required: true },
@@ -31,17 +32,6 @@ const cowSchema = new mongoose.Schema(
         note: { type: String, default: null },
       },
     ],
-
-    medicineToConsume: {
-      type: [
-        {
-          name: { type: String, required: false },
-          medicineNote: { type: String, default: null },
-        },
-      ],
-      default: [],
-    },
-
     pregnancies: [
       {
         attempt: { type: Number, required: false },
@@ -51,16 +41,6 @@ const cowSchema = new mongoose.Schema(
         notes: { type: String, default: null },
       },
     ],
-
-    linkedCalves: [
-      {
-        calfId: { type: mongoose.Schema.Types.ObjectId, ref: "Calf" },
-      },
-    ],
-
-    isFertilityConfirmed: { type: Boolean, default: false },
-    isPregnant: { type: Boolean, default: false },
-    isSick: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

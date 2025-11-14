@@ -12,8 +12,8 @@ interface CalfFormData {
   firstPregnancy: boolean;
   motherCow: string;
   promotedToCow: boolean;
-  imagePrimary: string;
-  imageSecondary?: string;
+  image1: string;
+  image2?: string;
 }
 
 export default function AddCalfPage() {
@@ -27,8 +27,8 @@ export default function AddCalfPage() {
     firstPregnancy: false,
     motherCow: "",
     promotedToCow: false,
-    imagePrimary: "",
-    imageSecondary: "",
+    image1: "",
+    image2: "",
   });
 
   const handleChange = (
@@ -47,7 +47,7 @@ export default function AddCalfPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    if (!formData.imagePrimary.trim()) {
+    if (!formData.image1.trim()) {
       alert("❌ Primary image URL is required!");
       return;
     }
@@ -58,8 +58,8 @@ export default function AddCalfPage() {
       weight: formData.weight ? Number(formData.weight) : null,
       motherCow: formData.motherCow?.trim() || null,
       images: {
-        primary: formData.imagePrimary,
-        secondary: formData.imageSecondary || null,
+        primary: formData.image1,
+        secondary: formData.image2 || null,
       },
     };
 
@@ -85,8 +85,8 @@ export default function AddCalfPage() {
         firstPregnancy: false,
         motherCow: "",
         promotedToCow: false,
-        imagePrimary: "",
-        imageSecondary: "",
+        image1: "",
+        image2: "",
       });
     } catch (error) {
       console.error("Error adding calf:", error);
@@ -136,9 +136,9 @@ export default function AddCalfPage() {
             </label>
             <input
               type="text"
-              name="imagePrimary"
+              name="image1"
               placeholder="Enter image URL"
-              value={formData.imagePrimary}
+              value={formData.image1}
               onChange={handleChange}
               required
               className="w-full bg-[#161b22] border border-gray-600 rounded-md p-3 focus:ring-2 focus:ring-red-500 focus:outline-none"
@@ -148,9 +148,9 @@ export default function AddCalfPage() {
             <label className="block font-semibold mb-1">Secondary Image</label>
             <input
               type="text"
-              name="imageSecondary"
+              name="image2"
               placeholder="Optional image URL"
-              value={formData.imageSecondary}
+              value={formData.image2}
               onChange={handleChange}
               className="w-full bg-[#161b22] border border-gray-600 rounded-md p-3 focus:ring-2 focus:ring-green-500 focus:outline-none"
             />

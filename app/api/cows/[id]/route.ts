@@ -62,29 +62,32 @@ export async function PUT(
 
     // Ensure arrays exist
     body.medicines = body.medicines || [];
-    body.medicineToConsume = body.medicineToConsume || [];
-    body.calves = body.calves || [];
+    // ✅ FIX linkedCalves (accept single string or array)
+    let fixedLinkedCalves = body.linkedCalves;
 
-    // ✅ Validate and format linked calves
-    const validCalves: { calfId: mongoose.Types.ObjectId }[] = [];
-    if (Array.isArray(body.calves) && body.calves.length > 0) {
-      for (const calfId of body.calves) {
-        if (!mongoose.Types.ObjectId.isValid(calfId)) {
-          return NextResponse.json(
-            { success: false, message: `Invalid calf ID: ${calfId}` },
-            { status: 400 }
-          );
-        }
-        const calf = await Calf.findById(calfId);
-        if (!calf) {
-          return NextResponse.json(
-            { success: false, message: `Calf not found for ID: ${calfId}` },
-            { status: 404 }
-          );
-        }
-        validCalves.push({ calfId: calf._id });
-      }
+    // Normalize to array of string IDs
+    let incomingIds: string[] = [];
+
+    if (typeof body.linkedCalves === "string") {
+      incomingIds = [body.linkedCalves];
+    } else if (Array.isArray(body.linkedCalves)) {
+      incomingIds = body.linkedCalves;
     }
+
+    // 🔥 CHECK: Prevent linking same calf ID twice in the request body
+    const hasDuplicates = new Set(incomingIds).size !== incomingIds.length;
+
+    if (hasDuplicates) {
+      return NextResponse.json(
+        { success: false, message: "Calf already linked (duplicate detected)" },
+        { status: 400 }
+      );
+    }
+
+    // 🔥 Convert IDs into ObjectId form AFTER validation
+    fixedLinkedCalves = incomingIds.map((id: string) => ({
+      calfId: new mongoose.Types.ObjectId(id),
+    }));
 
     // ✅ Handle pregnancies
     const pregnancies = (body.pregnancies || []).map((p: any) => ({
@@ -100,12 +103,10 @@ export async function PUT(
       id,
       {
         $set: {
+          cowId: body.cowId,
           name: body.name,
           image1: body.image1,
           image2: body.image2,
-          age: body.age,
-          weight: body.weight,
-          breed: body.breed,
           milkProduction: body.milkProduction,
           breedingDate: body.breedingDate,
           embryonicDeathDate: body.embryonicDeathDate,
@@ -117,9 +118,8 @@ export async function PUT(
           calvingDate: body.calvingDate,
           calvingCount: body.calvingCount,
           medicines: body.medicines,
-          medicineToConsume: body.medicineToConsume,
           pregnancies,
-          linkedCalves: validCalves,
+          linkedCalves: fixedLinkedCalves,
           isPregnant: body.isPregnant,
           isSick: body.isSick,
           isFertilityConfirmed: body.isFertilityConfirmed,

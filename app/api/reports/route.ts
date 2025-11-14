@@ -83,6 +83,13 @@ export async function GET() {
       isPregnant: cow.isPregnant,
     }));
 
+    const medicineRecords = cows.map((cow) => ({
+      _id: cow._id,
+      cowId: cow.cowId,
+      name: cow.name,
+      medicines: cow.medicines,
+    }));
+
     const reproductiveRecords = cows.map((cow) => ({
       _id: cow._id,
       cowId: cow.cowId,
@@ -103,6 +110,7 @@ export async function GET() {
       reportData: {
         basicInfo,
         reproductiveRecords,
+        medicineRecords,
         totalCows: cows.length,
         totalPregnant: cows.filter((c) => c.isPregnant).length,
         totalFertilized: cows.filter((c) => c.isFertilityConfirmed).length,

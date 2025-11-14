@@ -6,7 +6,6 @@ import { FaSyringe, FaBaby, FaEdit } from "react-icons/fa";
 import { GiCow } from "react-icons/gi";
 import Link from "next/link";
 import axios from "axios";
-import { LiaToggleOnSolid } from "react-icons/lia";
 
 interface Medicine {
   name: string;
@@ -24,23 +23,19 @@ interface Pregnancy {
   notes?: string;
 }
 
-interface MedicineToConsume {
-  name?: string;
-  medicineNote?: string;
-}
-
 interface Cow {
   _id: string;
   name: string;
-  breed?: string;
-  age?: number;
-  weight?: number;
-  isPregnant?: boolean;
-  isSick?: boolean;
   milkProduction?: number;
   milkFat?: number;
   addedAt?: string;
-  imported?: boolean;
+  isPregnant?: boolean;
+  isFertilityConfirmed?: boolean;
+  breedingDate?: string;
+  embryonicDeathDate?: string;
+  expectedCalvingDate?: string;
+  calvingCount?: number;
+  calvingDate?: string;
   linkedCalves?: {
     calfId: {
       _id: string;
@@ -49,7 +44,6 @@ interface Cow {
     } | null;
   }[];
   medicines?: Medicine[];
-  medicineToConsume?: MedicineToConsume[];
   pregnancies?: Pregnancy[];
   image1?: string;
   image2?: string;
@@ -69,14 +63,12 @@ export default function CowDetailPage() {
       try {
         const response = await axios.get(`/api/cows/${id}`);
         setCow(response.data.cow);
-        setLoading(false);
       } catch (err) {
         console.error("Failed to load cow:", err);
       } finally {
         setLoading(false);
       }
     };
-
     fetchCow();
   }, [id]);
 
@@ -117,7 +109,6 @@ export default function CowDetailPage() {
             alt={cow.name}
             className="w-64 h-48 object-cover rounded-xl border border-gray-700"
           />
-
           {cow.image2 && (
             <button
               onClick={() =>
@@ -129,43 +120,71 @@ export default function CowDetailPage() {
                 className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ${
                   currentImage === "image2" ? "translate-x-6 bg-orange-600" : ""
                 }`}
-              ></span>
+              />
             </button>
           )}
         </div>
 
-        <div className="flex-1 space-y-1">
+        {/* Cow Details */}
+        <div className="flex-1 space-y-2">
           <h1 className="text-3xl font-bold text-white flex items-center gap-2">
             <GiCow className="text-green-400" /> {cow.name}
           </h1>
-          <p className="text-gray-400">
-            Breed: <span className="text-white">{cow.breed || "N/A"}</span>
-          </p>
-          <p className="text-gray-400">
-            Weight: <span className="text-white">{cow.weight || "?"} kg</span>
-          </p>
-          <p className="text-gray-400">
-            Age: <span className="text-white">{cow.age || "?"} years</span>
-          </p>
+
           <div className="flex flex-wrap gap-2 mt-2">
             {cow.isPregnant && (
               <span className="bg-green-600/30 text-green-400 px-3 py-1 rounded-md text-sm">
                 Pregnant 🍼
               </span>
             )}
-            {cow.isSick && (
-              <span className="bg-red-600/30 text-red-400 px-3 py-1 rounded-md text-sm">
-                Sick 🤒
+            {cow.isFertilityConfirmed && (
+              <span className="bg-yellow-600/30 text-yellow-400 px-3 py-1 rounded-md text-sm">
+                Fertility Confirmed ✅
               </span>
             )}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 mt-4">
+            <div className="bg-[#0d1522] p-2 rounded-md border border-gray-700 text-center">
+              <p className="text-gray-400 text-xs">Breeding Date</p>
+              <p className="text-white font-semibold">
+                {cow.breedingDate
+                  ? new Date(cow.breedingDate).toISOString().split("T")[0]
+                  : "N/A"}
+              </p>
+            </div>
+            <div className="bg-[#0d1522] p-2 rounded-md border border-gray-700 text-center">
+              <p className="text-gray-400 text-xs">Expected Calving</p>
+              <p className="text-white font-semibold">
+                {cow.expectedCalvingDate
+                  ? new Date(cow.expectedCalvingDate)
+                      .toISOString()
+                      .split("T")[0]
+                  : "N/A"}
+              </p>
+            </div>
+            <div className="bg-[#0d1522] p-2 rounded-md border border-gray-700 text-center">
+              <p className="text-gray-400 text-xs">Calving Count</p>
+              <p className="text-white font-semibold">
+                {cow.calvingCount || "N/A"}
+              </p>
+            </div>
+            <div className="bg-[#0d1522] p-2 rounded-md border border-gray-700 text-center">
+              <p className="text-gray-400 text-xs">Embryonic Death</p>
+              <p className="text-white font-semibold">
+                {cow.embryonicDeathDate
+                  ? new Date(cow.embryonicDeathDate).toISOString().split("T")[0]
+                  : "N/A"}
+              </p>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid md:grid-cols-3 gap-4">
+      {/* Milk Stats */}
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="bg-[#161b22] p-3 rounded-xl border border-gray-700 text-center">
-          <p className="text-gray-400 text-sm">Milk Production</p>
+          <p className="text-gray-400 text-sm">Milk Production (L/day)</p>
           <p className="text-xl text-green-400 font-bold">
             {cow.milkProduction || "N/A"}
           </p>
@@ -191,7 +210,6 @@ export default function CowDetailPage() {
         <h2 className="text-2xl font-bold text-white flex items-center gap-2 mb-4">
           <FaSyringe className="text-cyan-400" /> Medicine Records
         </h2>
-
         {cow.medicines?.length ? (
           <div className="overflow-x-auto rounded-2xl border border-gray-800 shadow-lg bg-[#0d1117]/60 backdrop-blur-md">
             <table className="min-w-full text-sm text-gray-300">
@@ -252,31 +270,11 @@ export default function CowDetailPage() {
         )}
       </div>
 
-      {/* Medicine To-Consume */}
-      <div className="mt-10">
-        <h2 className="text-2xl font-bold text-white flex items-center gap-2 mb-4">
-          <FaSyringe className="text-cyan-400" /> Medicine To-Consume
-        </h2>
-        {cow.medicineToConsume?.length ? (
-          <ul className="list-disc list-inside space-y-1">
-            {cow.medicineToConsume.map((med, i) => (
-              <li key={i}>
-                <span className="font-semibold">{med.name}</span> -{" "}
-                {med.medicineNote || "N/A"}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-gray-400 mt-2">No medicines to consume.</p>
-        )}
-      </div>
-
       {/* Pregnancies */}
       <div className="mt-10">
         <h2 className="text-2xl font-bold text-white flex items-center gap-2 mb-6">
           <FaBaby className="text-pink-400" /> Pregnancies
         </h2>
-
         {cow.pregnancies?.length ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {cow.pregnancies.map((preg, i) => (
@@ -290,25 +288,22 @@ export default function CowDetailPage() {
                     {preg.attempt || "N/A"}
                   </span>
                 </div>
-
                 <div className="mb-1">
                   <span className="text-gray-400 text-sm">Start Date: </span>
                   <span className="text-white font-medium">
                     {preg.startDate
-                      ? new Date(preg.startDate).toString().split("T")[0]
+                      ? new Date(preg.startDate).toISOString().split("T")[0]
                       : "N/A"}
                   </span>
                 </div>
-
                 <div className="mb-1">
                   <span className="text-gray-400 text-sm">Due Date: </span>
                   <span className="text-white font-medium">
                     {preg.dueDate
-                      ? new Date(preg.dueDate).toString().split("T")[0]
+                      ? new Date(preg.dueDate).toISOString().split("T")[0]
                       : "N/A"}
                   </span>
                 </div>
-
                 <div className="mb-1">
                   <span className="text-gray-400 text-sm">Status: </span>
                   <span
@@ -321,7 +316,6 @@ export default function CowDetailPage() {
                     {preg.delivered ? "Delivered" : "Pending"}
                   </span>
                 </div>
-
                 {preg.notes && (
                   <div className="mt-2 flex items-center gap-2">
                     <span className="text-gray-400 text-sm font-medium">
@@ -340,17 +334,16 @@ export default function CowDetailPage() {
         )}
       </div>
 
+      {/* Linked Calves */}
       <div className="mt-8">
         <h2 className="text-2xl font-bold text-white flex items-center gap-2 mb-4">
           <FaBaby className="text-pink-400" /> Linked Calves
         </h2>
-
         {cow.linkedCalves?.length ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {cow.linkedCalves.map((calf) => {
               const calfData = calf.calfId;
               if (!calfData) return null;
-
               return (
                 <Link
                   href={`/dashboard/calf/${calfData._id}`}
