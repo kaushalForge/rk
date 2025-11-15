@@ -62,17 +62,24 @@ export async function PUT(
 
     // Ensure arrays exist
     body.medicines = body.medicines || [];
-    // ✅ FIX linkedCalves (accept single string or array)
-    let fixedLinkedCalves = body.linkedCalves;
+    // Ensure arrays exist
+    body.medicines = Array.isArray(body.medicines) ? body.medicines : [];
+    body.linkedCalves = Array.isArray(body.linkedCalves)
+      ? body.linkedCalves
+      : [];
 
-    // Normalize to array of string IDs
-    let incomingIds: string[] = [];
+    // Extract incoming IDs safely from body
+    const incomingIds = body.linkedCalves
+      .map((c: any) => c?.calfId?._id) // safely get _id
+      .filter((id: any) => id); // remove null/undefined
 
-    if (typeof body.linkedCalves === "string") {
-      incomingIds = [body.linkedCalves];
-    } else if (Array.isArray(body.linkedCalves)) {
-      incomingIds = body.linkedCalves;
-    }
+    // Convert to ObjectId and structure correctly
+    const fixedLinkedCalves = incomingIds.map((id: string) => ({
+      calfId: new mongoose.Types.ObjectId(id),
+    }));
+
+    // Assign back to body
+    body.linkedCalves = fixedLinkedCalves;
 
     // 🔥 CHECK: Prevent linking same calf ID twice in the request body
     const hasDuplicates = new Set(incomingIds).size !== incomingIds.length;
@@ -83,11 +90,6 @@ export async function PUT(
         { status: 400 }
       );
     }
-
-    // 🔥 Convert IDs into ObjectId form AFTER validation
-    fixedLinkedCalves = incomingIds.map((id: string) => ({
-      calfId: new mongoose.Types.ObjectId(id),
-    }));
 
     // ✅ Handle pregnancies
     const pregnancies = (body.pregnancies || []).map((p: any) => ({
@@ -160,5 +162,35 @@ export async function PUT(
     const message =
       error.name === "ValidationError" ? error.message : "Server error";
     return NextResponse.json({ success: false, message }, { status: 500 });
+  }
+}
+// Delte /api/cows/:id
+export async function DELETE(
+  req: Request,
+  ctx: { params: Promise<{ id: string }> }
+) {
+  try {
+    await dbConnect();
+    const { id } = await ctx.params;
+
+    const deletedCow = await Cow.findByIdAndDelete(id);
+
+    if (!deletedCow) {
+      return NextResponse.json(
+        { success: false, message: "Cow not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(
+      { success: true, message: "Cow deleted successfully" },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("🐄 Delete cow error:", error);
+    return NextResponse.json(
+      { success: false, message: "Failed to delete cow", error },
+      { status: 500 }
+    );
   }
 }

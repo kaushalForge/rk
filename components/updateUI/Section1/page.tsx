@@ -23,13 +23,15 @@ export default function Section1({ form, setForm }: any) {
             <h3 className="text-gray-300 mt-2">Image 1</h3>
           </div>
 
-          <div className="text-center">
-            <img
-              className="h-52 w-52 object-cover object-top rounded-xl shadow-md"
-              src={form.image2}
-            />
-            <h3 className="text-gray-300 mt-2">Image 2</h3>
-          </div>
+          {form?.image2 !== "N/A" && (
+            <div className="text-center">
+              <img
+                className="h-52 w-52 object-cover object-top rounded-xl shadow-md"
+                src={form.image2}
+              />
+              <h3 className="text-gray-300 mt-2">Image 2</h3>
+            </div>
+          )}
         </div>
 
         {/* RIGHT SIDE TOGGLE MENU */}
@@ -138,29 +140,46 @@ export default function Section1({ form, setForm }: any) {
           />
         </div>
 
+        {/* {Linked Calves} */}
         <div>
           <label className="text-gray-300 text-sm">Linked Calves</label>
-
-          {/* ---------- INPUT FOR IDs ---------- */}
+          <div className="flex flex-wrap gap-2 mt-1">
+            {form.linkedCalves?.map((c: any, index: number) => (
+              <div
+                key={index}
+                className="flex items-center gap-1 bg-green-500/20 text-green-400 px-2 py-1 rounded"
+              >
+                {c.calfId?._id || c.calfId?.name || "New"}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newLinked = [...form.linkedCalves];
+                    newLinked.splice(index, 1);
+                    setForm({ ...form, linkedCalves: newLinked });
+                  }}
+                  className="text-red-400 hover:text-red-600"
+                >
+                  &times;
+                </button>
+              </div>
+            ))}
+          </div>
           <input
             type="text"
-            value={
-              Array.isArray(form.linkedCalves)
-                ? form.linkedCalves
-                    .map(
-                      (c: any) =>
-                        typeof c === "string"
-                          ? c // raw ID
-                          : c?.calfId?._id || c?.calfId // populated
-                    )
-                    .filter(Boolean)
-                    .join(", ")
-                : ""
-            }
-            onChange={(e) => {
-              const raw = e.target.value;
-              const parts = raw.split(",").map((x) => x.trim());
-              setForm({ ...form, linkedCalves: parts }); // only strings
+            placeholder="Enter calf ID and press Enter"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                const val = e.currentTarget.value.trim();
+                if (!val) return;
+
+                const newLinked = [
+                  ...(form.linkedCalves || []),
+                  { _id: null, calfId: { _id: val, name: "" } },
+                ];
+                setForm({ ...form, linkedCalves: newLinked });
+                e.currentTarget.value = "";
+              }
             }}
             className="w-full mt-1 p-3 rounded-lg bg-[#0d1522] border border-gray-700 text-gray-100"
           />

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import { toast } from "sonner";
 import UpdateSection1 from "@/components/updateUI/Section1/page";
@@ -9,6 +9,7 @@ import UpdateSection2 from "@/components/updateUI/Section2/page";
 
 export default function UpdateCowPage() {
   const { id } = useParams();
+  const router = useRouter();
 
   const [form, setForm] = useState<any>(null);
 
@@ -23,9 +24,7 @@ export default function UpdateCowPage() {
           image1: data.image1 || "",
           image2: data.image2 || "",
           milkProduction: data.milkProduction || "",
-          linkedCalves: data.linkedCalves.map((c: any) =>
-            c?.calfId?._id ? c.calfId._id : c.calfId
-          ),
+          linkedCalves: data.linkedCalves ?? [],
           breedingDate: data.breedingDate?.split("T")[0] || "",
           embryonicDeathDate: data.embryonicDeathDate?.split("T")[0] || "",
           expectedCalvingDate: data.expectedCalvingDate?.split("T")[0] || "",
@@ -40,7 +39,6 @@ export default function UpdateCowPage() {
           isPregnant: data.isPregnant ?? false,
           isFertilityConfirmed: data.isFertilityConfirmed ?? false,
         });
-        console.log(form.linkedCalves, "linked");
       } catch (err) {
         console.error("Error fetching cow", err);
       }
@@ -63,6 +61,50 @@ export default function UpdateCowPage() {
     }
   };
 
+  const deleteCow = async () => {
+    toast.custom(
+      (t) => (
+        <div className="bg-[#0d1117] text-white p-4 rounded-xl shadow-lg border border-gray-700 max-w-sm">
+          <p className="font-semibold mb-3">
+            Are you sure you want to delete this cow?
+          </p>
+          <div className="flex justify-end gap-2">
+            <button
+              className="px-3 py-1 bg-gray-600 hover:bg-gray-500 rounded"
+              onClick={() => toast.dismiss(t)}
+            >
+              Cancel
+            </button>
+            <button
+              className="px-3 py-1 bg-red-600 hover:bg-red-500 rounded"
+              onClick={async () => {
+                try {
+                  await axios.delete(`/api/cows/${id}`);
+                  toast.dismiss(t);
+                  toast.success("Cow deleted successfully!", {
+                    position: "top-center",
+                    richColors: true,
+                  });
+                  router.push("/dashboard");
+                } catch (err) {
+                  console.error(err);
+                  toast.dismiss(t);
+                  toast.error("Error deleting cow");
+                }
+              }}
+            >
+              Yes, Delete
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: Infinity,
+        position: "top-center",
+        richColors: true,
+      }
+    );
+  };
   if (!form)
     return <div className="text-gray-300 p-10 text-center">Loading cow...</div>;
 
@@ -71,12 +113,20 @@ export default function UpdateCowPage() {
       <UpdateSection1 form={form} setForm={setForm} />
       <UpdateSection2 form={form} setForm={setForm} />
 
-      <button
-        onClick={updateCow}
-        className="mt-6 bg-green-600 text-white px-6 py-3 rounded-lg"
-      >
-        Update Cow
-      </button>
+      <div className="flex items-center justify-center gap-4">
+        <button
+          onClick={updateCow}
+          className="mt-6 bg-green-600 text-white px-6 py-3 rounded-lg"
+        >
+          Update Cow
+        </button>
+        <button
+          onClick={deleteCow}
+          className="mt-6 bg-red-600 text-white px-6 py-3 rounded-lg"
+        >
+          Delete Cow
+        </button>
+      </div>
     </div>
   );
 }

@@ -2,25 +2,23 @@ import mongoose from "mongoose";
 
 const calfSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true },
-    image1: { type: String, required: true },
-    image2: { type: String, default: "N/A" },
-    breed: { type: String, default: "N/A", required: false },
-    age: { type: Number, default: "N/A" },
-    weight: { type: Number, default: "N/A" },
-    medicineToConsume: {
-      type: [
-        {
-          name: { type: String, required: true },
-          medicineNote: { type: String, default: "" },
-        },
-      ],
-      default: [],
+    calfId: { type: String, required: true, unique: true },
+
+    name: {
+      type: String,
+      required: true,
+      unique: true,
     },
+
+    image1: { type: String, required: true },
+
+    image2: { type: String, default: "" },
+
+    // keep medicines but OPTIONAL and EMPTY by default
     medicines: {
       type: [
         {
-          name: { type: String, required: true },
+          name: { type: String },
           dateGiven: { type: Date },
           dosage: { type: String },
           hasTaken: { type: Boolean, default: false },
@@ -29,12 +27,12 @@ const calfSchema = new mongoose.Schema(
       ],
       default: [],
     },
+
+    // keep pregnancy but OPTIONAL
     isPregnant: { type: Boolean, default: false },
-    isSick: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
 
-// ✅ Prevent model overwrite on hot reload
 const Calf = mongoose.models.Calf || mongoose.model("Calf", calfSchema);
 export default Calf;

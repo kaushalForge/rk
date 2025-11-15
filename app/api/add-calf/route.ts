@@ -6,9 +6,7 @@ import Calf from "@/models/Calf";
 export async function GET() {
   try {
     await dbConnect();
-
     const calves = await Calf.find().lean();
-
     return NextResponse.json({ success: true, data: calves }, { status: 200 });
   } catch (error) {
     console.error("Error fetching calves:", error);
@@ -23,61 +21,21 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     await dbConnect();
-
     const body = await req.json();
-    const {
-      name,
-      breed,
-      age,
-      weight,
-      image1,
-      image2,
-      medicines,
-      medicineToConsume,
-      isPregnant,
-      isSick,
-    } = body;
+    const { calfId, name, image1 } = body;
 
-    // Validation — required fields
-    if (!name) {
+    console.log("CalfId & name", calfId, name);
+    console.log("Image1", image1);
+
+    const existingCalf = await Calf.findOne({ calfId });
+    if (existingCalf > 0) {
       return NextResponse.json(
-        { success: false, message: "Name is required." },
+        { success: false, message: "A calf with this ID already exists." },
         { status: 400 }
       );
     }
 
-    if (!image1) {
-      return NextResponse.json(
-        { success: false, message: "Primary image (image1) is required." },
-        { status: 400 }
-      );
-    }
-
-    // 🚫 Prevent duplicate calf name
-    const existingCalf = await Calf.findOne({ name });
-    if (existingCalf) {
-      return NextResponse.json(
-        { success: false, message: "A calf with this name already exists." },
-        { status: 400 }
-      );
-    }
-
-    // ✅ Create calf safely
-    const newCalf = await Calf.create({
-      name,
-      breed: breed || "",
-      age: age ?? null,
-      weight: weight ?? null,
-      image1,
-      image2: image2 || "",
-      medicines: Array.isArray(medicines) ? medicines : [],
-      medicineToConsume: Array.isArray(medicineToConsume)
-        ? medicineToConsume
-        : [],
-      isPregnant: isPregnant ?? false,
-      isSick: isSick ?? false,
-    });
-
+    const newCalf = await Calf.create({ calfId, name, image1 });
     return NextResponse.json(
       {
         success: true,

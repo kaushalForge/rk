@@ -9,19 +9,19 @@ export default function FilterPage() {
   const [animalType, setAnimalType] = useState<"cow" | "calf">("cow");
   const [filters, setFilters] = useState({
     name: "",
-    isSick: false,
-    isPregnant: false,
-    ageMin: "",
-    ageMax: "",
+    isPregnant: null as boolean | null,
     milkMin: "",
     milkMax: "",
   });
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Toggle filter values
-  const handleFilterChange = (key: string) => {
-    setFilters((prev) => ({ ...prev, [key]: !prev[key as keyof typeof prev] }));
+  // Toggle boolean filters
+  const handleFilterChange = (key: "isPregnant") => {
+    setFilters((prev) => ({
+      ...prev,
+      [key]: prev[key] === null ? true : prev[key] === true ? false : null,
+    }));
   };
 
   // Handle input changes
@@ -35,24 +35,20 @@ export default function FilterPage() {
     try {
       const queryParams = new URLSearchParams();
 
-      // Boolean filters
-      ["isSick", "isPregnant"].forEach((key) => {
-        if (filters[key as keyof typeof filters]) {
-          queryParams.append(key, "true"); // now includes calf
-        }
-      });
+      // Boolean filter: isPregnant (only if not null)
+      if (filters.isPregnant !== null) {
+        queryParams.append("isPregnant", filters.isPregnant.toString());
+      }
 
       // Name search
       if (filters.name) queryParams.append("name", filters.name);
 
-      // Age range
-      if (filters.ageMin) queryParams.append("ageMin", filters.ageMin);
-      if (filters.ageMax) queryParams.append("ageMax", filters.ageMax);
-
       // Milk production filter only for cows
       if (animalType === "cow") {
-        if (filters.milkMin) queryParams.append("milkProductionMin", filters.milkMin);
-        if (filters.milkMax) queryParams.append("milkProductionMax", filters.milkMax);
+        if (filters.milkMin)
+          queryParams.append("milkProductionMin", filters.milkMin);
+        if (filters.milkMax)
+          queryParams.append("milkProductionMax", filters.milkMax);
       }
 
       const endpoint = animalType === "cow" ? "/api/cows" : "/api/calves";
@@ -85,13 +81,17 @@ export default function FilterPage() {
         <div className="flex items-center gap-3 mt-4 sm:mt-0">
           <button
             onClick={() => setAnimalType("cow")}
-            className={`px-4 py-2 rounded-xl text-sm ${animalType === "cow" ? "bg-cyan-600" : "bg-gray-700"}`}
+            className={`px-4 py-2 rounded-xl text-sm ${
+              animalType === "cow" ? "bg-cyan-600" : "bg-gray-700"
+            }`}
           >
             Cow
           </button>
           <button
             onClick={() => setAnimalType("calf")}
-            className={`px-4 py-2 rounded-xl text-sm ${animalType === "calf" ? "bg-pink-600" : "bg-gray-700"}`}
+            className={`px-4 py-2 rounded-xl text-sm ${
+              animalType === "calf" ? "bg-pink-600" : "bg-gray-700"
+            }`}
           >
             Calf
           </button>
@@ -117,53 +117,35 @@ export default function FilterPage() {
             />
           </div>
 
-          {/* Health Status */}
-          <div className="flex flex-col">
-            <label className="mb-1 text-gray-400 font-medium">Health Status</label>
-            <button
-              onClick={() => handleFilterChange("isSick")}
-              className={`w-full p-3 rounded-xl font-semibold border ${filters.isSick ? "bg-red-600 border-red-500" : "bg-green-600 border-green-500"}`}
-            >
-              {filters.isSick ? "Sick" : "Healthy"}
-            </button>
-          </div>
-
           {/* Pregnancy Status */}
           <div className="flex flex-col">
-            <label className="mb-1 text-gray-400 font-medium">Pregnancy Status</label>
+            <label className="mb-1 text-gray-400 font-medium">
+              Pregnancy Status
+            </label>
             <button
               onClick={() => handleFilterChange("isPregnant")}
-              className={`w-full p-3 rounded-xl font-semibold border ${filters.isPregnant ? "bg-purple-600 border-purple-500" : "bg-gray-700 border-gray-600"}`}
+              className={`w-full p-3 rounded-xl font-semibold border ${
+                filters.isPregnant === true
+                  ? "bg-purple-600 border-purple-500"
+                  : filters.isPregnant === false
+                  ? "bg-gray-600 border-gray-500"
+                  : "bg-gray-700 border-gray-600"
+              }`}
             >
-              Pregnant
+              {filters.isPregnant === true
+                ? "Pregnant"
+                : filters.isPregnant === false
+                ? "Not Pregnant"
+                : "All"}
             </button>
-          </div>
-
-          {/* Age Range */}
-          <div className="flex flex-col">
-            <label className="mb-1 text-gray-400 font-medium">Age (Years)</label>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <input
-                type="number"
-                placeholder="Min"
-                value={filters.ageMin}
-                onChange={(e) => handleInputChange("ageMin", e.target.value)}
-                className="flex-1 w-full p-3 rounded-xl border border-gray-700 bg-[#0d1117] text-white placeholder-gray-500"
-              />
-              <input
-                type="number"
-                placeholder="Max"
-                value={filters.ageMax}
-                onChange={(e) => handleInputChange("ageMax", e.target.value)}
-                className="flex-1 w-full p-3 rounded-xl border border-gray-700 bg-[#0d1117] text-white placeholder-gray-500"
-              />
-            </div>
           </div>
 
           {/* Milk Production (only for cows) */}
           {animalType === "cow" && (
             <div className="flex flex-col">
-              <label className="mb-1 text-gray-400 font-medium">Milk Production (L/day)</label>
+              <label className="mb-1 text-gray-400 font-medium">
+                Milk Production (L/day)
+              </label>
               <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="number"
@@ -196,38 +178,47 @@ export default function FilterPage() {
         ) : results.length === 0 ? (
           <p className="text-gray-400">No results found.</p>
         ) : (
-          <div className="overflow-x-auto rounded-xl">
-            <table className="min-w-full text-sm text-left border border-gray-800 rounded-xl overflow-hidden">
-              <thead className="bg-gray-800 text-gray-300 uppercase text-xs tracking-wider">
+          <div className="overflow-x-auto rounded-xl shadow-lg">
+            <table className="min-w-full text-sm text-left border border-gray-800 rounded-xl overflow-hidden bg-[#161b22]">
+              <thead className="bg-gray-900 text-gray-300 uppercase text-xs tracking-wider">
                 <tr>
                   <th className="px-4 py-3 border-b border-gray-700">Name</th>
-                  <th className="px-4 py-3 border-b border-gray-700">Age (years)</th>
-                  <th className="px-4 py-3 border-b border-gray-700">Weight (kg)</th>
-                  <th className="px-4 py-3 border-b border-gray-700">Status</th>
-                  {animalType === "cow" && <th className="px-4 py-3 border-b border-gray-700">Milk (L/day)</th>}
+                  <th className="px-4 py-3 border-b border-gray-700">
+                    Pregnant
+                  </th>
+                  {animalType === "cow" && (
+                    <th className="px-4 py-3 border-b border-gray-700">
+                      Milk (L/day)
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody>
-                {results.map((item) => (
+                {results.map((item, index) => (
                   <tr
                     key={item._id}
-                    className="hover:bg-gray-700 transition-colors even:bg-gray-900"
+                    className={`transition-colors duration-300 ${
+                      index % 2 === 0 ? "bg-gray-800" : "bg-gray-700"
+                    } hover:bg-gray-600`}
                   >
-                    <td className="px-4 py-2 border-b border-gray-700">{item.name || "Unnamed"}</td>
-                    <td className="px-4 py-2 border-b border-gray-700">{item.age ?? "N/A"}</td>
-                    <td className="px-4 py-2 border-b border-gray-700">{item.weight ?? "N/A"}</td>
-                    <td className="px-4 py-2 border-b border-gray-700 flex gap-2 flex-wrap">
-                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${item.isSick ? "bg-red-600" : "bg-green-600"}`}>
-                        {item.isSick ? "Sick" : "Healthy"}
+                    <td className="px-4 py-2 border-b border-gray-700 font-medium text-white">
+                      {item.name || "Unnamed"}
+                    </td>
+                    <td className="px-4 py-2 border-b border-gray-700">
+                      <span
+                        className={`inline-block px-3 py-1 text-xs font-semibold rounded-full shadow-sm ${
+                          item.isPregnant
+                            ? "bg-green-500 text-white shadow-green-500/50"
+                            : "bg-red-500 text-white shadow-red-500/50"
+                        }`}
+                      >
+                        {item.isPregnant ? "Yes" : "No"}
                       </span>
-                      {item.isPregnant && (
-                        <span className="px-2 py-1 rounded-full text-xs font-semibold bg-purple-600 text-white">
-                          Pregnant
-                        </span>
-                      )}
                     </td>
                     {animalType === "cow" && (
-                      <td className="px-4 py-2 border-b border-gray-700">{item.milkProduction ?? "-"}</td>
+                      <td className="px-4 py-2 border-b border-gray-700 text-white">
+                        {item.milkProduction ?? "-"}
+                      </td>
                     )}
                   </tr>
                 ))}

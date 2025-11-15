@@ -5,7 +5,7 @@ const cowSchema = new mongoose.Schema(
     cowId: { type: String, required: false, unique: true },
     name: { type: String, required: true },
     image1: { type: String, required: true },
-    image2: { type: String, default: "N/A" },
+    image2: { type: String, default: "" },
     milkProduction: { type: Number, default: null },
     isPregnant: { type: Boolean, default: false },
     isFertilityConfirmed: { type: Boolean, default: false },

@@ -1,16 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import axios from "axios";
 
 export default function AddCowPage() {
   const [formData, setFormData] = useState({
     name: "",
-    age: "",
-    weight: "",
-    breed: "",
     milkProduction: "",
-    primaryImage: "",
-    secondaryImage: "",
+    image1: "",
+    image2: "",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -21,42 +19,27 @@ export default function AddCowPage() {
     e.preventDefault();
 
     try {
-      const res = await fetch("/api/add-cow", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: formData.name,
-          breed: formData.breed || "",
-          age: Number(formData.age) || null,
-          weight: Number(formData.weight) || null,
-          milkProduction: Number(formData.milkProduction) || null,
-          images: {
-            primary: formData.primaryImage,
-            secondary: formData.secondaryImage || null,
-          },
-          medicines: [], // optional, default empty
-          pregnancies: [], // optional, default empty
-          calves: [], // optional, default empty
-        }),
+      const res = await axios.post("/api/add-cow", {
+        name: formData.name,
+        milkProduction: Number(formData.milkProduction) || null,
+        image1: formData.image1,
+        image2: formData.image2,
+        medicines: [],
+        pregnancies: [],
       });
 
-      const result = await res.json();
-
-      if (result.success) {
+      if (res.data.success) {
         alert("🐄 Cow added successfully!");
         setFormData({
           name: "",
-          breed: "",
-          age: "",
-          weight: "",
           milkProduction: "",
-          primaryImage: "",
-          secondaryImage: "",
+          image1: "",
+          image2: "",
         });
       } else {
-        alert("❌ Error adding cow: " + (result.message || "Unknown error"));
+        alert("❌ Error adding cow: " + (res.data.message || "Unknown error"));
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error submitting cow:", error);
       alert("❌ Something went wrong while adding the cow.");
     }
@@ -83,45 +66,6 @@ export default function AddCowPage() {
           />
         </div>
 
-        {/* Breed */}
-        <div>
-          <label className="block font-semibold mb-1">Breed</label>
-          <input
-            type="text"
-            name="breed"
-            placeholder="Enter breed (e.g., Jersey, Holstein)"
-            value={formData.breed}
-            onChange={handleChange}
-            className="w-full bg-[#161b22] border border-gray-600 rounded-md p-3 focus:ring-2 focus:ring-green-500 focus:outline-none"
-          />
-        </div>
-
-        {/* Age & Weight */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div>
-            <label className="block font-semibold mb-1">Age (years)</label>
-            <input
-              type="number"
-              name="age"
-              placeholder="e.g., 4"
-              value={formData.age}
-              onChange={handleChange}
-              className="w-full bg-[#161b22] border border-gray-600 rounded-md p-3 focus:ring-2 focus:ring-green-500 focus:outline-none"
-            />
-          </div>
-          <div>
-            <label className="block font-semibold mb-1">Weight (kg)</label>
-            <input
-              type="number"
-              name="weight"
-              placeholder="e.g., 450"
-              value={formData.weight}
-              onChange={handleChange}
-              className="w-full bg-[#161b22] border border-gray-600 rounded-md p-3 focus:ring-2 focus:ring-green-500 focus:outline-none"
-            />
-          </div>
-        </div>
-
         {/* Milk Production */}
         <div>
           <label className="block font-semibold mb-1">
@@ -142,9 +86,9 @@ export default function AddCowPage() {
           <label className="block font-semibold mb-1">Primary Image URL</label>
           <input
             type="text"
-            name="primaryImage"
+            name="image1"
             placeholder="Enter primary image URL"
-            value={formData.primaryImage}
+            value={formData.image1}
             onChange={handleChange}
             required
             className="w-full bg-[#161b22] border border-gray-600 rounded-md p-3 focus:ring-2 focus:ring-green-500 focus:outline-none"
@@ -157,9 +101,9 @@ export default function AddCowPage() {
           </label>
           <input
             type="text"
-            name="secondaryImage"
+            name="image2"
             placeholder="Optional secondary image URL"
-            value={formData.secondaryImage}
+            value={formData.image2}
             onChange={handleChange}
             className="w-full bg-[#161b22] border border-gray-600 rounded-md p-3 focus:ring-2 focus:ring-green-500 focus:outline-none"
           />

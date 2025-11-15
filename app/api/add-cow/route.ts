@@ -26,19 +26,13 @@ export async function POST(req: Request) {
     const {
       cowId,
       name,
-      breed,
-      age,
-      weight,
       milkProduction,
       image1,
       image2,
       medicines,
-      medicineToConsume,
       pregnancies,
-      calves,
       isPregnant,
       isFertilityConfirmed,
-      isSick,
       breedingDate,
       embryonicDeathDate,
       expectedCalvingDate,
@@ -81,21 +75,12 @@ export async function POST(req: Request) {
     const newCow = await Cow.create({
       cowId: cowId || undefined,
       name,
-      breed: breed || "N/A",
-      age: parseNumber(age),
-      weight: parseNumber(weight),
+
       milkProduction: parseNumber(milkProduction),
       image1,
       image2: image2 || "N/A",
       medicines: Array.isArray(medicines) ? medicines : [],
-      medicineToConsume: Array.isArray(medicineToConsume)
-        ? medicineToConsume
-        : [],
       pregnancies: Array.isArray(pregnancies) ? pregnancies : [],
-      linkedCalves:
-        Array.isArray(calves) && calves.length > 0
-          ? calves.map((id: string) => ({ calfId: id }))
-          : [],
       breedingDate: parseDate(breedingDate),
       embryonicDeathDate: parseDate(embryonicDeathDate),
       expectedCalvingDate: parseDate(expectedCalvingDate),
@@ -108,7 +93,6 @@ export async function POST(req: Request) {
       calvingCount: parseNumber(calvingCount) ?? 0,
       isPregnant: Boolean(isPregnant),
       isFertilityConfirmed: Boolean(isFertilityConfirmed),
-      isSick: Boolean(isSick),
     });
 
     return NextResponse.json(

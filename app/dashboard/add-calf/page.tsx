@@ -1,255 +1,104 @@
 "use client";
 
+import axios from "axios";
 import { useState, FormEvent, ChangeEvent } from "react";
 
 interface CalfFormData {
+  calfId: string;
   name: string;
-  breed: string;
-  age: string;
-  weight: string;
-  hasReachedPregnancyAge: boolean;
-  isPregnant: boolean;
-  firstPregnancy: boolean;
-  motherCow: string;
-  promotedToCow: boolean;
   image1: string;
-  image2?: string;
 }
 
 export default function AddCalfPage() {
   const [formData, setFormData] = useState<CalfFormData>({
+    calfId: "",
     name: "",
-    breed: "",
-    age: "",
-    weight: "",
-    hasReachedPregnancyAge: false,
-    isPregnant: false,
-    firstPregnancy: false,
-    motherCow: "",
-    promotedToCow: false,
     image1: "",
-    image2: "",
   });
 
-  const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value, type } = e.target;
-    const checked =
-      type === "checkbox" && "checked" in e.target ? e.target.checked : false;
+  const [loading, setLoading] = useState(false);
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-
-    if (!formData.image1.trim()) {
-      alert("❌ Primary image URL is required!");
-      return;
-    }
-
-    const payload = {
-      ...formData,
-      age: formData.age ? Number(formData.age) : null,
-      weight: formData.weight ? Number(formData.weight) : null,
-      motherCow: formData.motherCow?.trim() || null,
-      images: {
-        primary: formData.image1,
-        secondary: formData.image2 || null,
-      },
-    };
-
+    setLoading(true);
     try {
-      const res = await fetch("/api/add-calf", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json();
-      if (!res.ok || !data.success) throw new Error(data.message || "Failed");
-
+      const res = await axios.post("/api/add-calf", formData);
+      if (!res.data.success) {
+        throw new Error(res.data.message || "API error");
+      }
       alert("✅ Calf added successfully!");
-
-      setFormData({
-        name: "",
-        breed: "",
-        age: "",
-        weight: "",
-        hasReachedPregnancyAge: false,
-        isPregnant: false,
-        firstPregnancy: false,
-        motherCow: "",
-        promotedToCow: false,
-        image1: "",
-        image2: "",
-      });
-    } catch (error) {
-      console.error("Error adding calf:", error);
-      alert("❌ Failed to add calf.");
+      setFormData({ calfId: "", name: "", image1: "" });
+    } catch (error: unknown) {
+      console.log(error);
+      alert(`❌ Failed to add calf`);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-3xl mx-auto mt-10 p-8 rounded-2xl bg-[#0d1117]/70 backdrop-blur-xl border border-gray-700 shadow-lg">
-      <h1 className="text-3xl font-bold text-green-400 mb-8 text-center flex items-center justify-center gap-2">
+    <div className="max-w-3xl mx-auto mt-10 p-8 rounded-2xl bg-[#0d1117]/70 border border-gray-700">
+      <h1 className="text-3xl font-bold text-green-400 mb-8 text-center">
         🐮 Add New Calf
       </h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Calf ID */}
+        <div>
+          <label className="block font-semibold mb-1">Calf ID</label>
+          <input
+            type="text"
+            name="calfId"
+            placeholder="Enter calf ID"
+            value={formData.calfId}
+            onChange={handleChange}
+            className="w-full bg-[#161b22] border border-gray-600 rounded-md p-3"
+          />
+        </div>
+
         {/* Calf Name */}
         <div>
           <label className="block font-semibold mb-1">Calf Name</label>
           <input
             type="text"
             name="name"
-            placeholder="Enter calf name (e.g., Daisy)"
+            placeholder="Enter calf name"
             value={formData.name}
             onChange={handleChange}
-            required
-            className="w-full bg-[#161b22] border border-gray-600 rounded-md p-3 focus:ring-2 focus:ring-green-500 focus:outline-none"
+            className="w-full bg-[#161b22] border border-gray-600 rounded-md p-3"
           />
         </div>
 
-        {/* Breed */}
+        {/* Primary Image */}
         <div>
-          <label className="block font-semibold mb-1">Breed</label>
+          <label className="block font-semibold mb-1 text-red-400">
+            Primary Image URL
+          </label>
           <input
-            type="text"
-            name="breed"
-            placeholder="e.g., Jersey, Holstein"
-            value={formData.breed}
+            type="url"
+            name="image1"
+            placeholder="Enter image URL"
+            value={formData.image1}
             onChange={handleChange}
-            className="w-full bg-[#161b22] border border-gray-600 rounded-md p-3 focus:ring-2 focus:ring-green-500 focus:outline-none"
+            className="w-full bg-[#161b22] border border-gray-600 rounded-md p-3"
           />
         </div>
 
-        {/* Images */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block font-semibold mb-1 text-red-400">
-              Primary Image (required)
-            </label>
-            <input
-              type="text"
-              name="image1"
-              placeholder="Enter image URL"
-              value={formData.image1}
-              onChange={handleChange}
-              required
-              className="w-full bg-[#161b22] border border-gray-600 rounded-md p-3 focus:ring-2 focus:ring-red-500 focus:outline-none"
-            />
-          </div>
-          <div>
-            <label className="block font-semibold mb-1">Secondary Image</label>
-            <input
-              type="text"
-              name="image2"
-              placeholder="Optional image URL"
-              value={formData.image2}
-              onChange={handleChange}
-              className="w-full bg-[#161b22] border border-gray-600 rounded-md p-3 focus:ring-2 focus:ring-green-500 focus:outline-none"
-            />
-          </div>
-        </div>
-
-        {/* Age & Weight */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block font-semibold mb-1">Age (months)</label>
-            <input
-              type="number"
-              name="age"
-              placeholder="e.g., 5"
-              value={formData.age}
-              onChange={handleChange}
-              className="w-full bg-[#161b22] border border-gray-600 rounded-md p-3 focus:ring-2 focus:ring-green-500 focus:outline-none"
-            />
-          </div>
-          <div>
-            <label className="block font-semibold mb-1">Weight (kg)</label>
-            <input
-              type="number"
-              name="weight"
-              placeholder="e.g., 120"
-              value={formData.weight}
-              onChange={handleChange}
-              className="w-full bg-[#161b22] border border-gray-600 rounded-md p-3 focus:ring-2 focus:ring-green-500 focus:outline-none"
-            />
-          </div>
-        </div>
-
-        {/* Mother Cow */}
-        <div>
-          <label className="block font-semibold mb-1">Mother Cow ID</label>
-          <input
-            type="text"
-            name="motherCow"
-            placeholder="Enter Mother Cow ObjectId (optional)"
-            value={formData.motherCow}
-            onChange={handleChange}
-            className="w-full bg-[#161b22] border border-gray-600 rounded-md p-3 focus:ring-2 focus:ring-green-500 focus:outline-none"
-          />
-        </div>
-
-        {/* Pregnancy Info */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              name="hasReachedPregnancyAge"
-              checked={formData.hasReachedPregnancyAge}
-              onChange={handleChange}
-              className="accent-green-500"
-            />
-            Reached Pregnancy Age
-          </label>
-
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              name="isPregnant"
-              checked={formData.isPregnant}
-              onChange={handleChange}
-              className="accent-green-500"
-            />
-            Is Pregnant
-          </label>
-
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              name="firstPregnancy"
-              checked={formData.firstPregnancy}
-              onChange={handleChange}
-              className="accent-green-500"
-            />
-            First Pregnancy
-          </label>
-        </div>
-
-        {/* Promotion */}
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            name="promotedToCow"
-            checked={formData.promotedToCow}
-            onChange={handleChange}
-            className="accent-green-500"
-          />
-          Promoted to Cow
-        </label>
-
-        {/* Submit */}
         <button
           type="submit"
-          className="w-full bg-green-600/80 hover:bg-green-500 text-white font-semibold py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-green-500/20"
+          disabled={loading}
+          className={`w-full py-3 rounded-lg text-white ${
+            loading
+              ? "bg-gray-500 cursor-not-allowed"
+              : "bg-green-600 hover:bg-green-500"
+          }`}
         >
-          ➕ Add Calf
+          {loading ? "Adding..." : "➕ Add Calf"}
         </button>
       </form>
     </div>
