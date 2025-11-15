@@ -12,7 +12,6 @@ export async function GET(
   try {
     await dbConnect();
     const { id } = await ctx.params;
-
     if (!id) {
       return NextResponse.json(
         { success: false, message: "ID is required" },
@@ -20,10 +19,9 @@ export async function GET(
       );
     }
 
-    const cow = await Cow.findById(id).populate(
-      "linkedCalves.calfId",
-      "name image1"
-    );
+    const cow = await Cow.findById(id)
+      .populate("linkedCalves.calfId", "name image1")
+      .lean();
 
     if (!cow) {
       return NextResponse.json(
